@@ -4,10 +4,11 @@ export const layoutStyle = style({
   display: 'flex',
   flexDirection: 'column',
   height: '100vh',
+  width: '100vw',
+  overflowX: 'hidden',
 });
 
 export const containerStyle = style({
-  display: 'flex',
-  flex: 1,
-  backgroundColor : '#FAFAFA'
+  backgroundColor : '#FAFAFA',
+  height: 'calc(100vh - 60px)'
 });
