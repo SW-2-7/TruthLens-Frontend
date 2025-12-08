@@ -1,0 +1,92 @@
+import { ElementType, HTMLAttributes } from 'react';
+import { flexStyle } from './Flex.css';
+import clsx from 'clsx';
+
+export interface FlexProps extends HTMLAttributes<HTMLDivElement> {
+  tag?: ElementType;
+  direction?: 'row' | 'column';
+  align?: 'flexStart' | 'flexEnd' | 'center' | 'stretch' | 'baseline';
+  justify?:
+    | 'flexStart'
+    | 'flexEnd'
+    | 'center'
+    | 'spaceBetween'
+    | 'spaceAround'
+    | 'spaceEvenly';
+  gap?: string;
+  wrap?: 'nowrap' | 'wrap' | 'wrapReverse';
+  grow?: 'grow0' | 'grow1';
+  position?: 'static' | 'absolute' | 'relative' | 'fixed' | 'sticky';
+  width?: string;
+  height?: string;
+  margin?: string;
+  padding?: string;
+  marginTop?: string;
+  marginBottom?: string;
+  marginRight?: string;
+  marginLeft?: string;
+  paddingTop?: string;
+  paddingBottom?: string;
+  paddingRight?: string;
+  paddingLeft?: string;
+}
+
+const Flex = ({
+  style,
+  tag = 'div',
+  direction,
+  align,
+  justify,
+  gap,
+  wrap,
+  grow,
+  position,
+  width,
+  height,
+  margin,
+  padding,
+  marginTop,
+  marginBottom,
+  marginRight,
+  marginLeft,
+  paddingTop,
+  paddingBottom,
+  paddingRight,
+  paddingLeft,
+  children,
+  ...props
+}: FlexProps) => {
+  const Element = tag;
+
+  const inlineStyles = {
+    position,
+    gap,
+    width,
+    height,
+    margin,
+    padding,
+    marginTop,
+    marginBottom,
+    marginRight,
+    marginLeft,
+    paddingTop,
+    paddingBottom,
+    paddingRight,
+    paddingLeft,
+  };
+
+  return (
+    <Element
+      {...props}
+      className={clsx(
+        flexStyle({ direction, align, justify, wrap, grow }),
+        props.className
+      )}
+      style={{ ...inlineStyles, ...style }}
+    >
+      {children}
+    </Element>
+  );
+};
+
+export default Flex;
