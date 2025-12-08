@@ -6,6 +6,8 @@ import Text from '@/components/Text/Text';
 import Button from '@/components/Button/Button';
 import * as styles from './ImageUploadSection.css';
 import { IcDelete, IcDropzone } from '@/components/icons';
+import { useModal } from '@/hooks/useModal/useModal';
+import AnalysisProgressModal from '../AnalysisProgressModal/AnalysisProgressModal';
 
 const ACCEPTED_TYPES = ['image/jpeg', 'image/jpg', 'image/png'];
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
@@ -27,6 +29,8 @@ export default function ImageUploadSection() {
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
+   const { isOpen, open, close } = useModal(false);
+   
   const fileInfo = useMemo(() => {
     if (!file) return null;
     return {
@@ -109,10 +113,13 @@ export default function ImageUploadSection() {
 
   const onAnalyze = () => {
     // 여기서 실제 분석 API 연결하면 됨
+     if (!file) return;
+    open();
     console.log('analyze file:', file);
   };
 
   return (
+    <>
     <Flex direction="column" gap="3.7rem">
       <div
         className={styles.dropzone}
@@ -185,5 +192,9 @@ export default function ImageUploadSection() {
         이미지 분석하기
       </Button>
     </Flex>
+
+    <AnalysisProgressModal open={isOpen} onClose={close} />
+    </>
+    
   );
 }
