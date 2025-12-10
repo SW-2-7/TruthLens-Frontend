@@ -1,5 +1,9 @@
+export { default as IcCheck } from "./IcCheck";
 export { default as IcDelete } from "./IcDelete";
 export { default as IcDropzone } from "./IcDropzone";
+export { default as IcGrayWarning } from "./IcGrayWarning";
 export { default as IcLogo } from "./IcLogo";
+export { default as IcQuestion } from "./IcQuestion";
 export { default as IcSpinner } from "./IcSpinner";
 export { default as IcUpload } from "./IcUpload";
+export { default as IcWarning } from "./IcWarning";
