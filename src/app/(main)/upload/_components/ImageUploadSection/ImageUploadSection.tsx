@@ -21,13 +21,13 @@ const STORAGE_KEY = 'TRUTHLENS_LAST_ANALYSIS';
 export interface DetectResponse {
   filename: string;
   is_fake: boolean;
-  score: number; // 98.5 같은 실수
-  heatmap: string; // base64 (접두사 없는)
-  original_image: string; // base64 (접두사 없는)
+  score: number; 
+  heatmap: string; 
+  original_image: string; 
 }
 
 export interface StoredAnalysis extends DetectResponse {
-  analyzedAt: string; // ISO 문자열 (new Date().toISOString())
+  analyzedAt: string; 
 }
 
 function formatBytes(bytes: number) {
@@ -132,12 +132,10 @@ export default function ImageUploadSection() {
     const onAnalyze = async () => {
     if (!file) return;
 
-    // 모달 열어서 단계 로딩 보여주기
     open();
 
     try {
       const formData = new FormData();
-      // 백엔드에서 기대하는 필드 이름이 'file'이라고 가정
       formData.append('file', file);
 
       const res = await fetch('http://127.0.0.1:8000/api/v1/detect', {
@@ -146,7 +144,7 @@ export default function ImageUploadSection() {
       });
 
       if (!res.ok) {
-        // 상태 코드별 메시지
+
         if (res.status === 400) {
           setError('지원하지 않는 파일 형식이에요.');
         } else if (res.status === 413) {
@@ -155,7 +153,7 @@ export default function ImageUploadSection() {
           setError('이미지 분석 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.');
         }
         console.error('detect error status:', res.status);
-        // 에러면 모달 닫고 끝
+  
         close();
         return;
       }
@@ -169,11 +167,7 @@ export default function ImageUploadSection() {
         analyzedAt: new Date().toISOString(),
       };
 
-      // localStorage에 저장
       localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
-
-      // 업로드 컴포넌트 상태 정리 (선택)
-      // setFile(null); setPreviewUrl(null); 등등 해도 되고 안해도 돼
 
   
     } catch (e) {

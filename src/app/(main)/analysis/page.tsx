@@ -8,6 +8,8 @@ import * as styles from './page.css';
 import ImageAnalysisPanel from './_components/ImageAnalysis/ImageAnalysis';
 import { IcGrayWarning } from '@/components/icons';
 import { useEffect, useState } from 'react';
+import jsPDF from 'jspdf';
+import { getRiskMeta } from '@/utils/riskUtils';
 
 const STORAGE_KEY = 'TRUTHLENS_LAST_ANALYSIS';
 
@@ -42,6 +44,25 @@ function formatKoreanDateTime(isoString: string): string {
   return `${year}년 ${month}월 ${day}일 ${ampm} ${pad(hour12)}:${pad(minute)}`;
 }
 
+// 폰트 파일을 base64 문자열로 변환
+async function loadFontBase64(url: string): Promise<string> {
+  const res = await fetch(url);
+
+  if (!res.ok) {
+    throw new Error(`폰트 로드 실패: ${res.status} ${res.statusText}`);
+  }
+
+  const buffer = await res.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i += 1) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+
+  return btoa(binary);
+}
+
 export default function AnalysisPage() {
    const [analysis, setAnalysis] = useState<StoredAnalysis | null>(null);
 
@@ -51,7 +72,6 @@ export default function AnalysisPage() {
       : null;
 
     if (!raw) {
-      // 분석 데이터가 없으면 업로드 페이지로 돌려보냄
       window.location.href = '/upload';
       return;
     }
@@ -65,19 +85,91 @@ export default function AnalysisPage() {
     }
   }, []);
 
-  // 아직 로딩 중일 때
   if (!analysis) {
     return null;
   }
 
-  // 점수는 소수점 반올림해서 정수로
   const score = Math.round(analysis.score);
   const finishedAt = formatKoreanDateTime(analysis.analyzedAt);
+ const meta = getRiskMeta(score);
 
-  // base64를 data URL로 변환해서 img src로 사용
-  // (백엔드가 PNG로 내보낸다고 가정. 아니면 MIME 타입을 응답에 추가해도 좋음)
   const originalUrl = `data:image/png;base64,${analysis.original_image}`;
   const heatmapUrl = `data:image/png;base64,${analysis.heatmap}`;
+
+   /** PDF 다운로드 핸들러 */
+const handleDownloadPdf = async () => {
+  try {
+    const doc = new jsPDF({
+      unit: 'mm',
+      format: 'a4',
+    });
+
+    const fontBase64 = await loadFontBase64('/fonts/NanumGothic.ttf');
+    doc.addFileToVFS('NanumGothic.ttf', fontBase64);
+    doc.addFont('NanumGothic.ttf', 'NanumGothic', 'normal');
+    doc.setFont('NanumGothic', 'normal');
+    doc.setFontSize(14);
+
+    const marginLeft = 20;
+    let cursorY = 25;
+
+    // 제목
+    doc.setFontSize(20);
+    doc.text('TruthLens 이미지 분석 리포트', marginLeft, cursorY);
+    cursorY += 15;
+
+    doc.setFontSize(12);
+
+    // 기본 정보
+    doc.text(`파일명: ${analysis.filename}`, marginLeft, cursorY);
+    cursorY += 7;
+    doc.text(`조작 가능성: ${score}%`, marginLeft, cursorY);
+    cursorY += 7;
+    doc.text(`분석 완료 시각: ${finishedAt}`, marginLeft, cursorY);
+    cursorY += 10;
+
+    const judgementText =
+      score >= 70
+        ? '진위 판별: 조작 의심'
+        : score >= 40
+        ? '진위 판별: 주의 필요'
+        : '진위 판별: 조작 가능성 낮음';
+
+    doc.text(judgementText, marginLeft, cursorY);
+    cursorY += 12;
+
+    // 먼저 이미지부터 배치
+    const imgY = cursorY;
+    const imgWidth = 70; // mm
+    const imgHeight = 50;
+
+    // 원본 이미지
+    doc.text('원본 이미지', marginLeft, imgY - 5);
+    doc.addImage(originalUrl, 'PNG', marginLeft, imgY, imgWidth, imgHeight);
+
+    // 조작 영역 이미지
+    const rightX = marginLeft + imgWidth + 10;
+    doc.text('조작 영역 이미지', rightX, imgY - 5);
+    doc.addImage(heatmapUrl, 'PNG', rightX, imgY, imgWidth, imgHeight);
+
+    cursorY = imgY + imgHeight + 15;
+
+    const descLines = doc.splitTextToSize(
+      '이 리포트는 TruthLens 서비스에서 제공한 분석 결과를 기반으로 하며, 법적 판단이나 절대적 진위를 보장하지 않습니다. 중요한 판단이 필요할 경우 전문가의 추가 검증을 받으시기 바랍니다.',
+      170,
+    );
+    doc.text(descLines, marginLeft, cursorY);
+
+
+    const safeFilename =
+      analysis.filename?.replace(/[^\w.-]+/g, '_') || 'truthlens_report';
+    doc.save(`${safeFilename}.pdf`);
+  } catch (err) {
+    console.error('PDF 생성 실패', err);
+    alert('PDF 생성 중 오류가 발생했어요. 콘솔을 확인해 주세요.');
+  }
+};
+
 
     return (
       <Flex width="100%" direction="column" gap="4rem" justify="center" align="center" paddingBottom="12rem" paddingTop="10rem" paddingLeft="8rem" paddingRight="8rem">
@@ -101,7 +193,7 @@ export default function AnalysisPage() {
         </Flex>
 
         <Flex direction="row" justify="center" gap="2.7rem" align='center' width='100%'>
- <Button variant="main" width="34.1rem">
+ <Button variant="main" width="34.1rem" onClick={handleDownloadPdf}>
             PDF로 저장하기
           </Button>
            <Button
