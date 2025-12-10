@@ -7,23 +7,85 @@ import ResultHeader from './_components/ResultHeader/ResultHeader';
 import * as styles from './page.css';
 import ImageAnalysisPanel from './_components/ImageAnalysis/ImageAnalysis';
 import { IcGrayWarning } from '@/components/icons';
+import { useEffect, useState } from 'react';
 
+const STORAGE_KEY = 'TRUTHLENS_LAST_ANALYSIS';
 
-const MOCK_SCORE = 87;
-const MOCK_FINISHED_AT = '2025년 12월 1일 오후 06:14';
-const MOCK_ORIGINAL_URL = 'https://cdn.imweb.me/upload/S201910012ff964777e0e3/62f9a36ea3cea.jpg';
-const MOCK_HEATMAP_URL = 'https://dimg.donga.com/wps/NEWS/IMAGE/2022/01/28/111500268.2.jpg';
+interface DetectResponse {
+  filename: string;
+  is_fake: boolean;
+  score: number;
+  heatmap: string;
+  original_image: string;
+}
+
+interface StoredAnalysis extends DetectResponse {
+  analyzedAt: string;
+}
+
+function formatKoreanDateTime(isoString: string): string {
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return '';
+
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+
+  const hour24 = date.getHours();
+  const minute = date.getMinutes();
+
+  const ampm = hour24 < 12 ? '오전' : '오후';
+  const hour12 = hour24 % 12 || 12;
+
+  const pad = (n: number) => (n < 10 ? `0${n}` : String(n));
+
+  return `${year}년 ${month}월 ${day}일 ${ampm} ${pad(hour12)}:${pad(minute)}`;
+}
 
 export default function AnalysisPage() {
-   const score = MOCK_SCORE;
+   const [analysis, setAnalysis] = useState<StoredAnalysis | null>(null);
+
+  useEffect(() => {
+    const raw = typeof window !== 'undefined'
+      ? localStorage.getItem(STORAGE_KEY)
+      : null;
+
+    if (!raw) {
+      // 분석 데이터가 없으면 업로드 페이지로 돌려보냄
+      window.location.href = '/upload';
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(raw) as StoredAnalysis;
+      setAnalysis(parsed);
+    } catch (e) {
+      console.error('failed to parse stored analysis', e);
+      window.location.href = '/upload';
+    }
+  }, []);
+
+  // 아직 로딩 중일 때
+  if (!analysis) {
+    return null;
+  }
+
+  // 점수는 소수점 반올림해서 정수로
+  const score = Math.round(analysis.score);
+  const finishedAt = formatKoreanDateTime(analysis.analyzedAt);
+
+  // base64를 data URL로 변환해서 img src로 사용
+  // (백엔드가 PNG로 내보낸다고 가정. 아니면 MIME 타입을 응답에 추가해도 좋음)
+  const originalUrl = `data:image/png;base64,${analysis.original_image}`;
+  const heatmapUrl = `data:image/png;base64,${analysis.heatmap}`;
 
     return (
       <Flex width="100%" direction="column" gap="4rem" justify="center" align="center" paddingBottom="12rem" paddingTop="10rem" paddingLeft="8rem" paddingRight="8rem">
-         <ResultHeader score={score} finishedAt={MOCK_FINISHED_AT} />
+         <ResultHeader score={score} finishedAt={finishedAt}  />
 
             <ImageAnalysisPanel
-          originalImageUrl={MOCK_ORIGINAL_URL}
-          heatmapImageUrl={MOCK_HEATMAP_URL}
+          originalImageUrl={originalUrl}
+        heatmapImageUrl={heatmapUrl}
         />
 
         <Flex gap='1.9rem' justify='flexStart' align='center' className={styles.card}>
