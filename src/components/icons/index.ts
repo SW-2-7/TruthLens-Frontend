@@ -1,3 +1,4 @@
+export { default as IcArrow } from "./IcArrow";
 export { default as IcCheck } from "./IcCheck";
 export { default as IcDelete } from "./IcDelete";
 export { default as IcDropzone } from "./IcDropzone";
