@@ -11,7 +11,7 @@ const pretendard = localFont({
 
 export const metadata: Metadata = {
   title: "TruthLens",
-  description: "sw",
+  description: "AI 기반 이미지 진위 분석 서비스. 딥페이크와 이미지 조작 여부를 정밀하게 분석합니다.",
 };
 
 export default function RootLayout({

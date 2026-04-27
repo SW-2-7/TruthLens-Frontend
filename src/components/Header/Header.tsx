@@ -1,4 +1,3 @@
-'use client';
 import { IcLogo } from '../icons';
 import * as styles from './Header.css';
 

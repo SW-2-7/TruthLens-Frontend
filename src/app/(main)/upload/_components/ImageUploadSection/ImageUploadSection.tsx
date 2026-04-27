@@ -7,7 +7,9 @@ import Button from '@/components/Button/Button';
 import * as styles from './ImageUploadSection.css';
 import { IcDelete, IcDropzone } from '@/components/icons';
 import { useModal } from '@/hooks/useModal/useModal';
-import AnalysisProgressModal from '../AnalysisProgressModal/AnalysisProgressModal';
+import dynamic from 'next/dynamic';
+
+const AnalysisProgressModal = dynamic(() => import('../AnalysisProgressModal/AnalysisProgressModal'));
 
 const ACCEPTED_TYPES = [  'image/jpeg',
   'image/jpg',
@@ -138,7 +140,7 @@ export default function ImageUploadSection() {
       const formData = new FormData();
       formData.append('file', file);
 
-      const res = await fetch('http://127.0.0.1:8000/api/v1/detect', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/detect`, {
         method: 'POST',
         body: formData,
       });

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import Flex from '@/components/Flex/Flex';
 import Text from '@/components/Text/Text';
 import Button from '@/components/Button/Button';

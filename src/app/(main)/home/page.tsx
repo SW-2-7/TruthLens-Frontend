@@ -1,17 +1,14 @@
-'use client';
-
 import Image from 'next/image';
 import Flex from '@/components/Flex/Flex';
 import Text from '@/components/Text/Text';
 import { IcArrow } from '@/components/icons';
 import * as styles from './page.css';
-import { useRouter } from 'next/navigation';
-import FaqAccordion from '@/components/FaqAccordion/FaqAccordion';
+import dynamic from 'next/dynamic';
+import AnalyzeButton from './_components/AnalyzeButton';
 
+const FaqAccordion = dynamic(() => import('@/components/FaqAccordion/FaqAccordion'));
 
 export default function HomePage() {
- const router = useRouter();
-
   return (
     <main className={styles.page}>
       {/* 1. Hero 섹션 */}
@@ -47,13 +44,7 @@ export default function HomePage() {
               </Text>
             </Flex>
 
-            <button
-              type="button"
-              className={styles.heroButton}
-              onClick={() => router.push('/upload')}
-            >
-              이미지 분석해보기
-            </button>
+            <AnalyzeButton />
           </Flex>
     
       </section>
@@ -76,18 +67,22 @@ export default function HomePage() {
                 alt="이미지 업로드 카드"
                 width={400}
                 height={483}
+                priority
+                sizes="(max-width: 768px) 100vw, 400px"
               />
               <Image
                 src="/images/landing-how-to2.png"
                 alt="AI 분석 카드"
-               width={400}
+                width={400}
                 height={483}
+                sizes="(max-width: 768px) 100vw, 400px"
               />
               <Image
                 src="/images/landing-how-to3.png"
                 alt="결과 확인 및 리포트 저장 카드"
-         width={400}
+                width={400}
                 height={483}
+                sizes="(max-width: 768px) 100vw, 400px"
               />
             </Flex>
           </Flex>
@@ -119,18 +114,21 @@ export default function HomePage() {
                 alt="조작 의심 예시 카드"
                 width={400}
                 height={493}
+                sizes="(max-width: 768px) 100vw, 400px"
               />
               <Image
                 src="/images/landing-examples2.png"
                 alt="주의 필요 예시 카드"
-               width={400}
+                width={400}
                 height={493}
+                sizes="(max-width: 768px) 100vw, 400px"
               />
               <Image
                 src="/images/landing-examples3.png"
                 alt="조작 가능성 낮음 예시 카드"
                 width={400}
                 height={493}
+                sizes="(max-width: 768px) 100vw, 400px"
               />
             </Flex>
           </Flex>
